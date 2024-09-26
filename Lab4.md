@@ -279,9 +279,12 @@ lab4data %>%
 
 # Q1: What is your overall conclusion about this variable’s normality? Why?
 
-The datasets are not normal as seen in the graphs above - they are
-skewed. Also, the S-W normality test is significant, further confirming
-the normality assumption is not met.
+The datasets don’t seem normal based on the graphs above - they are
+skewed. Although the normality test by group suggests the normality
+condition is met, the S-W test for the dataset as a whole had a
+significant P-value. So, it is justifiable to transform the data based
+on the skewed plot and the significant P-value for the S-W for the
+dataset before grouping
 
 # Equal Variance between Groups
 
@@ -403,7 +406,8 @@ leveneTest(Performance~Group, lab4dataConG1)
 # Q2: Overall, does it meet the equal variance assumption across the groups? Why?
 
 No it does not, because the levene test result was significant. ie. the
-P value was smaller than 0.05
+P value was smaller than 0.05. In addition, the variances between the
+groups are more than double in size.
 
 # Transformation
 
@@ -420,8 +424,95 @@ ggplot(lab4data, aes(x = Performance_log)) + geom_histogram(binwidth = 0.2) + th
 
 ![](Lab4_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
+``` r
+violinBy(Performance_log ~ Group, data = lab4data, rain= TRUE, vertical = FALSE)
+```
+
+![](Lab4_files/figure-gfm/unnamed-chunk-9-2.png)<!-- -->
+
+``` r
+shapiro.test(lab4data$Performance_log)
+```
+
+    ## 
+    ##  Shapiro-Wilk normality test
+    ## 
+    ## data:  lab4data$Performance_log
+    ## W = 0.96379, p-value = 0.152
+
+``` r
+?describeBy()
+
+describeBy(Performance_log ~ Group, data = lab4data) 
+```
+
+    ## 
+    ##  Descriptive statistics by group 
+    ## Group: Control
+    ##                 vars  n mean   sd median trimmed mad  min  max range  skew
+    ## Performance_log    1 10 1.98 0.24   1.97       2 0.2 1.51 2.35  0.85 -0.27
+    ##                 kurtosis   se
+    ## Performance_log    -0.64 0.08
+    ## ------------------------------------------------------------ 
+    ## Group: G1
+    ##                 vars  n mean   sd median trimmed mad  min  max range  skew
+    ## Performance_log    1 10 2.32 0.33   2.42    2.34 0.3 1.83 2.65  0.82 -0.37
+    ##                 kurtosis  se
+    ## Performance_log    -1.74 0.1
+    ## ------------------------------------------------------------ 
+    ## Group: G2
+    ##                 vars n mean  sd median trimmed  mad  min max range  skew
+    ## Performance_log    1 9 2.56 0.2    2.6    2.56 0.08 2.19 2.8  0.62 -0.74
+    ##                 kurtosis   se
+    ## Performance_log     -0.9 0.07
+    ## ------------------------------------------------------------ 
+    ## Group: G3
+    ##                 vars n mean   sd median trimmed  mad  min  max range skew
+    ## Performance_log    1 8 2.35 0.21   2.37    2.35 0.24 2.03 2.68  0.65    0
+    ##                 kurtosis   se
+    ## Performance_log    -1.34 0.07
+    ## ------------------------------------------------------------ 
+    ## Group: G4
+    ##                 vars  n mean   sd median trimmed  mad  min  max range  skew
+    ## Performance_log    1 10 2.12 0.27    2.1    2.14 0.28 1.64 2.47  0.82 -0.21
+    ##                 kurtosis   se
+    ## Performance_log    -1.29 0.08
+
+``` r
+lab4data %>%
+  group_by(Group) %>%
+  summarize(W = shapiro.test(Performance_log)$statistic, p_value = shapiro.test(Performance_log)$p.value)
+```
+
+    ## # A tibble: 5 × 3
+    ##   Group       W p_value
+    ##   <chr>   <dbl>   <dbl>
+    ## 1 Control 0.957  0.747 
+    ## 2 G1      0.850  0.0584
+    ## 3 G2      0.867  0.114 
+    ## 4 G3      0.989  0.994 
+    ## 5 G4      0.947  0.637
+
+``` r
+leveneTest(Performance_log~Group, lab4data)
+```
+
+    ## Warning in leveneTest.default(y = y, group = group, ...): group coerced to
+    ## factor.
+
+    ## Levene's Test for Homogeneity of Variance (center = median)
+    ##       Df F value Pr(>F)
+    ## group  4   1.483 0.2245
+    ##       42
+
 # Q3: Run the above tests again with the transformed outcome. Compare the differences in results.
 
 The histogram for the dataset was originally positively skewed but,
 after the log transformation, the histogram shows a more normal
-distribution.
+distribution. In addition, the S-W test is insignificant, which means
+the normality condition is not violated - originally, this was not the
+case. Similarly, the Levine test of variance produced a significant
+result before the transformation. It is now insignificant, meaning the
+variance assumption is met. The group level normality test produced the
+same result as before the transformation - not significant; meaning the
+normality requirement was met, and is still met.

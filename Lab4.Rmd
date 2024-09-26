@@ -105,7 +105,7 @@ lab4data %>%
 ```
 # Q1: What is your overall conclusion about this variable's normality? Why?
 
-The datasets are not normal as seen in the graphs above - they are skewed. Also, the S-W normality test is significant, further confirming the normality assumption is not met. 
+The datasets don't seem normal based on the graphs above - they are skewed. Although the normality test by group suggests the normality condition is met, the S-W test for the dataset as a whole had a significant P-value. So, it is justifiable to transform the data based on the skewed plot and the significant P-value for the S-W for the dataset before grouping
 
 # Equal Variance between Groups
 ## Descrptive Variance
@@ -143,7 +143,7 @@ leveneTest(Performance~Group, lab4dataConG1)
 ```
 
 # Q2: Overall, does it meet the equal variance assumption across the groups? Why?
-No it does not, because the levene test result was significant. ie. the P value was smaller than 0.05
+No it does not, because the levene test result was significant. ie. the P value was smaller than 0.05. In addition, the variances between the groups are more than double in size. 
 
 # Transformation
 ```{r}
@@ -154,8 +154,23 @@ lab4data$Performance_log <- log10(lab4data$Performance)
 
 ggplot(lab4data, aes(x = Performance_log)) + geom_histogram(binwidth = 0.2) + theme_classic()
 
+violinBy(Performance_log ~ Group, data = lab4data, rain= TRUE, vertical = FALSE)
+
+shapiro.test(lab4data$Performance_log)
+
+?describeBy()
+
+describeBy(Performance_log ~ Group, data = lab4data) 
+
+lab4data %>%
+  group_by(Group) %>%
+  summarize(W = shapiro.test(Performance_log)$statistic, p_value = shapiro.test(Performance_log)$p.value)
+
+leveneTest(Performance_log~Group, lab4data)
+
+
 ```
 
 # Q3: Run the above tests again with the transformed outcome. Compare the differences in results. 
 
-The histogram for the dataset was originally positively skewed but, after the log transformation, the histogram shows a more normal distribution.
+The histogram for the dataset was originally positively skewed but, after the log transformation, the histogram shows a more normal distribution. In addition, the S-W test is insignificant, which means the normality condition is not violated - originally, this was not the case. Similarly, the Levine test of variance produced a significant result before the transformation. It is now insignificant, meaning the variance assumption is met. The group level normality test produced the same result as before the transformation - not significant; meaning the normality requirement was met, and is still met.
